@@ -13,9 +13,6 @@ def init_db():
     cursor = conn.cursor()
     # Modify the schema to include long_url and short_url fields
     cursor.execute('''
-        DROP TABLE messages
-    ''')
-    cursor.execute('''
         
         CREATE TABLE IF NOT EXISTS messages (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -30,6 +27,7 @@ def init_db():
     conn.close()
 
 
+# Function to generate a random short URL if no custom alias is provided
 def generate_short_url():
     return ''.join(random.choices(string.ascii_letters + string.digits, k=6))
 
@@ -42,21 +40,33 @@ def submit():
     name = request.form['name']
     occasion = request.form['occasion']
     message = request.form['message']
-    
-    # Generate long URL (in this case, we'll just use a fake example for illustration)
+    custom_alias = request.form['custom_alias']
+
+    # Generate long URL (for this example, using a dummy long URL)
     long_url = f"http://example.com/message/{random.randint(1000, 9999)}"
     
-    # Generate a short URL (hash)
-    short_url_hash = generate_short_url()
-    short_url = f"http://localhost:5000/{short_url_hash}"
+    # Use the custom alias if provided; otherwise, generate a short URL
+    if custom_alias:
+        short_url = f"http://localhost:5000/{custom_alias}"
+    else:
+        short_url_hash = generate_short_url()
+        short_url = f"http://localhost:5000/{short_url_hash}"
 
     # Store data in the database including long and short URLs
     conn = sqlite3.connect('messages.db')
     cursor = conn.cursor()
+
+    # Check if the custom alias already exists in the database
+    if custom_alias:
+        cursor.execute("SELECT 1 FROM messages WHERE short_url = ?", (short_url,))
+        if cursor.fetchone():
+            return "Error: Custom alias already exists. Please choose a different one."
+
     cursor.execute('''
         INSERT INTO messages (name, occasion, message, long_url, short_url)
         VALUES (?, ?, ?, ?, ?)
     ''', (name, occasion, message, long_url, short_url))
+
     conn.commit()
     conn.close()
 
@@ -68,5 +78,4 @@ def display_short_url():
     return f"Your shortened URL is: <a href='{short_url}'>{short_url}</a>"
 
 if __name__ == '__main__':
-    init_db()
     app.run(debug=True)
