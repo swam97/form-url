@@ -1,7 +1,7 @@
 import random
 import string
 import sqlite3
-from flask import Flask, request, render_template, redirect, url_for
+from flask import Flask, request, render_template, jsonify, redirect, url_for
 
 app = Flask(__name__)
 
@@ -60,7 +60,8 @@ def submit():
     if custom_alias:
         cursor.execute("SELECT 1 FROM messages WHERE short_url = ?", (short_url,))
         if cursor.fetchone():
-            return "Error: Custom alias already exists. Please choose a different one."
+            return jsonify({'error': 'Custom alias already exists. Please choose a different one.'}), 400
+            # return "Error: Custom alias already exists. Please choose a different one."
 
     cursor.execute('''
         INSERT INTO messages (name, occasion, message, long_url, short_url)
@@ -69,13 +70,18 @@ def submit():
 
     conn.commit()
     conn.close()
+    return jsonify({'success': 'Message submitted successfully!', 'short_url': short_url}), 200
+    # return redirect(url_for('display_short_url', short_url=short_url))
+    # return redirect(url_for('display_short_url', alias=custom_alias or short_url.split('/')[-1]))
 
-    return redirect(url_for('display_short_url', short_url=short_url))
 
 @app.route('/display')
 def display_short_url():
     short_url = request.args.get('short_url')
-    return f"Your shortened URL is: <a href='{short_url}'>{short_url}</a>"
+    return f"Your customized URL is: <a href='{short_url}'>{short_url}</a>"
+    # alias = request.args.get('alias')
+    # short_url = f"http://localhost:5000/{alias}"
+    # return f"Your customized URL is: <a href='{short_url}'>{alias}</a>"
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -11,6 +11,21 @@
         * {
             box-sizing: border-box;
         }
+
+        .form-container {
+            width: 50%;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .error-popup {
+            color: red;
+            display: none;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 
@@ -18,7 +33,9 @@
 
     <div class="form-container">
         <h1>Submit Your Message</h1>
-        <form id="messageForm" method="POST" action="/submit">
+        <div id="error-popup" class="error-popup"></div>
+        <!-- <form id="messageForm" method="POST" action="/submit"> -->
+        <form id="messageForm" method="POST">
             <label for="name">Name:</label>
             <input type="text" id="name" name="name" required>
 
@@ -34,7 +51,22 @@
             <button type="submit">Submit</button>
         </form>
     </div>
+    <!-- Modal for confirmation -->
+    <div id="confirmationModal" class="modal">
+        <div class="modal-content">
+            <h2>Confirm Your Details</h2>
+            <p><strong>Name:</strong> <span id="confirmName"></span></p>
+            <p><strong>Occasion:</strong> <span id="confirmOccasion"></span></p>
+            <p><strong>Message:</strong> <span id="confirmMessage"></span></p>
+            <p><strong>Custom Alias:</strong> <span id="confirmAlias"></span></p>
 
+            <div class="modal-buttons">
+                <button id="confirmYes">Yes</button>
+                <button id="confirmNo">No</button>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 
 </html>
